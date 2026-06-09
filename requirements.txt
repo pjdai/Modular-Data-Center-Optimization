@@ -1,0 +1,11 @@
+numpy>=1.26
+pandas>=2.0
+cvxpy>=1.5
+clarabel>=0.9
+pyyaml>=6.0
+matplotlib>=3.8
+
+# Optional — enables real CAISO LMP fetching (otherwise falls back to cached profiles)
+# Disabled on Python 3.14: pulls lxml<6, which has no cp314 wheel and fails to build from source on Windows.
+# Re-enable once lxml ships a 3.14 wheel, or under a 3.11/3.12 venv.
+# gridstatus>=0.27

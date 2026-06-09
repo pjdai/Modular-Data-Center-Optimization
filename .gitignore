@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# Virtual environments
+.venv/
+venv/
+
+# Data files
+*.csv
+*.xlsx
+*.parquet
+*.pkl
+
+# Images / figures
+*.png
+
+# Notebooks
+*.ipynb
+.ipynb_checkpoints/
+
+# Output folders
+outputs/
+inputs/demand_profile.csv
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store

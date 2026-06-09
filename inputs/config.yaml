@@ -1,0 +1,89 @@
+# Modular Data Center Optimization — System Configuration
+
+# Horizon & seed
+horizon_hours: 168            # 1 week. Use 24 for quick sanity runs.
+seed: 42
+
+# Data center IT capacity
+total_capacity_mw: 10
+peak_multiplier: 1.30         # Hard ceiling on instantaneous IT power = 1.3 * total_capacity
+
+# Workload tasks
+tasks:
+  - name: interactive_serving
+    flexibility_hours: 0      # No SLA slack — must run on release
+    share_of_demand: 0.30
+    max_power_multiplier: 2.0
+    color: "#e74c3c"
+
+  - name: etl_pipeline
+    flexibility_hours: 2
+    share_of_demand: 0.20
+    max_power_multiplier: 2.0
+    color: "#f39c12"
+
+  - name: batch_ml_training
+    flexibility_hours: 12
+    share_of_demand: 0.35
+    max_power_multiplier: 2.0
+    color: "#3498db"
+
+  - name: cold_backup
+    flexibility_hours: 24
+    share_of_demand: 0.15
+    max_power_multiplier: 2.0
+    color: "#2ecc71"
+
+# Power supply side
+supply:
+  baseload_mw: 5.0            # Constant fixed-capacity source (sized at ~50% of peak IT)
+  grid_cap_mw: 12.0           # Max import from grid
+  pricing_season: shoulder    # summer | winter | shoulder
+
+# Battery
+battery:
+  capacity_mwh: 4.0           # Sweep range: 1.0 — 10.0
+  power_max_mw: 2.0           # 0.5C at 4 MWh capacity
+  eta_charge: 0.95
+  eta_discharge: 0.95
+  soc_min_frac: 0.10
+  soc_max_frac: 0.90
+  soc_initial_frac: 0.50      # Cyclic boundary forces final == initial
+  degradation_cost_usd_per_mwh: 15.0   # $/MWh cycled (typical LFP range: 10–25)
+
+# Thermal / cooling
+thermal:
+  # cop_model:
+  #   "constant"               — flat COP (sanity check / sensitivity floor)
+  #   "chiller_with_economizer"— time-varying COP driven by outdoor temperature
+  cop_model: chiller_with_economizer
+
+  cop: 4.0                    # Used only when cop_model == "constant"
+
+  # Chiller curve (mechanical-cooling regime)
+  cop_ref: 4.0
+  cop_temp_slope: 0.10        # ΔCOP per °C above t_ref_c
+  cop_floor: 2.0
+  t_ref_c: 20.0
+
+  # Economizer (free-cooling) regime
+  cop_econ: 20.0
+  t_full_chiller_c: 18.0      # Above this -> mechanical chiller only
+  t_full_econ_c: 10.0         # Below this -> full free cooling
+
+  # Outdoor temperature trace.
+  #   mode: noaa       — fetch via Open-Meteo historical archive (30-day avg).
+  #   mode: synthetic  — analytical diurnal cycle (offline fallback).
+  outdoor_temp:
+    mode: noaa
+    noaa:
+      # Placeholder coordinates — set lat/lon to your own site before running.
+      lat: 0.0
+      lon: 0.0
+      timezone: America/Los_Angeles
+    # Fallback parameters when mode == "synthetic" or fetch fails.
+    t_mean_c: 16.0
+    diurnal_amp_c: 7.0
+    peak_hour: 15
+    seasonal_drift_amp_c: 1.5
+    seasonal_period_hours: 168
